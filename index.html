@@ -870,7 +870,7 @@ function polarPoint(cx, cy, r, angleDeg){
 
 function buildRadarChart(data){
 
-    const size = 620;
+    const size = 780;
     const cx = size/2, cy = size/2;
     const maxR = 210;
     const n = data.length;
@@ -912,15 +912,23 @@ function buildRadarChart(data){
     }).join("");
 
     // labels around the outside
+    // Stagger the radial offset so tightly-packed labels (especially the
+    // ones clustered near the very top and very bottom of a 19-axis wheel)
+    // don't sit at the same distance and collide with each other.
     let labelSvg = "";
     data.forEach((d,i)=>{
         const angle = i*angleStep;
-        const p = polarPoint(cx, cy, maxR + 26, angle);
+        const angleRad = angle * Math.PI / 180;
+        const verticalness = Math.abs(Math.cos(angleRad)); // 1 at top/bottom, 0 at left/right
+        const zigzag = (i % 2 === 0) ? 0 : 16;
+        const extra = zigzag + 34 * verticalness;
+
+        const p = polarPoint(cx, cy, maxR + 24 + extra, angle);
         const norm = ((angle % 360) + 360) % 360;
         let anchor = "middle";
         if(norm > 8 && norm < 172) anchor = "start";
         else if(norm > 188 && norm < 352) anchor = "end";
-        labelSvg += `<text x="${p.x}" y="${p.y}" font-size="12" font-weight="600" text-anchor="${anchor}" fill="#334155" dominant-baseline="middle">${d.category}</text>`;
+        labelSvg += `<text x="${p.x}" y="${p.y}" font-size="11" font-weight="600" text-anchor="${anchor}" direction="ltr" fill="#334155" dominant-baseline="middle">${d.category}</text>`;
     });
 
     return `
