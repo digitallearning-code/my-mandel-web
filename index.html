@@ -183,6 +183,28 @@ h1{
     color:rgba(255,255,255,.85);
 }
 
+.quiz-nav{
+    display:flex;
+    justify-content:flex-start;
+    margin-bottom:10px;
+}
+
+.btn-back{
+    background:none;
+    border:none;
+    color:var(--primary);
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    padding:6px 4px;
+    text-decoration:underline;
+    transition:.2s;
+}
+
+.btn-back:hover{
+    opacity:.7;
+}
+
 .progress-bar{
     height:14px;
     background:#e5e7eb;
@@ -253,6 +275,12 @@ h1{
     color:white;
 
     box-shadow:0 20px 35px rgba(44,74,110,.30);
+}
+
+.btn-option.selected{
+    background:var(--primary);
+    color:white;
+    box-shadow:0 10px 25px rgba(44,74,110,.30);
 }
 
 /* Add this */
@@ -630,6 +658,10 @@ h1{
 <div class="progress-fill" id="progress"></div>
 </div>
 
+<div class="quiz-nav">
+<button id="back-btn" class="btn-back" onclick="goBack()" style="display:none;">חזרה לשאלה הקודמת</button>
+</div>
+
 <div class="question-number" id="question-number"></div>
 <div class="question-text" id="question-text"></div>
 
@@ -863,6 +895,7 @@ function displayName(category){
 }
 
 let currentQuestion = 0;
+let answers = new Array(questions.length).fill(null);
 
 const scores = {};
 const categoryCounts = {};
@@ -882,6 +915,8 @@ function showQuestion(){
  document.getElementById("progress").style.width =
 ((currentQuestion + 1) / questions.length * 100) + "%";
 
+    document.getElementById("back-btn").style.display =
+        currentQuestion > 0 ? "inline-block" : "none";
 
     let q = questions[currentQuestion];
 
@@ -898,16 +933,26 @@ function showQuestion(){
 
         const btn = document.createElement("button");
         btn.className="btn-option";
+        if(answers[currentQuestion] === option.score){
+            btn.classList.add("selected");
+        }
         btn.innerText=option.label;
 
         btn.onclick=()=>{
-            scores[q.category]+=option.score;
+            answers[currentQuestion] = option.score;
             currentQuestion++;
             showQuestion();
         };
 
         container.appendChild(btn);
     });
+}
+
+function goBack(){
+    if(currentQuestion > 0){
+        currentQuestion--;
+        showQuestion();
+    }
 }
 
 function showResults(){
@@ -919,6 +964,12 @@ function showResults(){
     resultsScreen.style.display="block";
     resultsScreen.style.animation="fadeIn .7s ease";
 
+    // Recompute from scratch based on recorded answers, so that going back
+    // and changing a response is reflected correctly (no double-counting).
+    Object.keys(scores).forEach(cat=>{ scores[cat] = 0; });
+    questions.forEach((q,i)=>{
+        scores[q.category] += (answers[i] || 0);
+    });
 
     const results = Object.keys(scores)
     .map(cat=>({
@@ -1133,6 +1184,8 @@ function copyAiPrompt(){
 
 function startQuiz(gender){
     questions = (gender === 'female') ? questionsFemale : questionsMale;
+    currentQuestion = 0;
+    answers = new Array(questions.length).fill(null);
 
     document.getElementById("gender-screen").style.display = "none";
     document.getElementById("quiz-screen").style.display = "block";
