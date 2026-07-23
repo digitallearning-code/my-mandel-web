@@ -130,6 +130,59 @@ h1{
     font-weight:600;
 }
 
+.gender-screen{
+    background:white;
+    border-radius:20px;
+    padding:35px;
+    margin-bottom:30px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.05);
+}
+
+.gender-question{
+    font-size:20px;
+    font-weight:600;
+    margin-bottom:22px;
+}
+
+.gender-options{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    flex-wrap:wrap;
+}
+
+.btn-gender{
+    padding:18px 30px;
+    border:none;
+    border-radius:16px;
+    background:#eaf0f5;
+    color:var(--primary);
+    font-size:17px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.btn-gender span{
+    display:block;
+    font-size:13px;
+    font-weight:400;
+    color:#64748b;
+    margin-top:4px;
+}
+
+.btn-gender:hover{
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    color:white;
+    transform:translateY(-3px);
+    box-shadow:0 15px 30px rgba(44,74,110,.25);
+}
+
+.btn-gender:hover span{
+    color:rgba(255,255,255,.85);
+}
+
 .progress-bar{
     height:14px;
     background:#e5e7eb;
@@ -563,7 +616,15 @@ h1{
 </div>
 </div>
 
-<div id="quiz-screen">
+<div id="gender-screen" class="gender-screen">
+<p class="gender-question">כדי לנסח את השאלות בצורה טבעית עבורך, במה תרצה/י שהשאלות ינוסחו?</p>
+<div class="gender-options">
+<button class="btn-gender" onclick="startQuiz('male')">גבר <span>(״חשוב לו...״)</span></button>
+<button class="btn-gender" onclick="startQuiz('female')">אישה <span>(״חשוב לה...״)</span></button>
+</div>
+</div>
+
+<div id="quiz-screen" style="display:none;">
 
 <div class="progress-bar">
 <div class="progress-fill" id="progress"></div>
@@ -624,7 +685,7 @@ h1{
 
 <script>
 
-const questions = [
+const questionsMale = [
 {text:"חשוב לו לעצב את השקפותיו באופן עצמאי.", category:"עצמאות חשיבה"},
 {text:"חשוב לו שהמדינה שלו תהיה בטוחה ויציבה.", category:"ביטחון חברתי"},
 {text:"חשוב לו לבלות בנעימים.", category:"הדוניזם"},
@@ -684,6 +745,69 @@ const questions = [
 {text:"חשוב לו לקבל אנשים אחרים גם כשאינו מסכים איתם.", category:"אוניברסליזם סובלנות"}
 ];
 
+const questionsFemale = [
+{text:"חשוב לה לעצב את השקפותיה באופן עצמאי.", category:"עצמאות חשיבה"},
+{text:"חשוב לה שהמדינה שלה תהיה בטוחה ויציבה.", category:"ביטחון חברתי"},
+{text:"חשוב לה לבלות בנעימים.", category:"הדוניזם"},
+{text:"חשוב לה להימנע מלהרגיז אנשים אחרים.", category:"קונפורמיות בין-אישית"},
+{text:"חשוב לה שהחלשים והפגיעים בחברה יהיו מוגנים.", category:"אוניברסליזם דאגה"},
+{text:"חשוב לה שאנשים יעשו מה שהיא אומרת שעליהם לעשות.", category:"כוח דומיננטיות"},
+{text:"חשוב לה לא לראות את עצמה ראויה ליותר מאחרים.", category:"ענווה"},
+{text:"חשוב לה לשמור על הטבע.", category:"אוניברסליזם טבע"},
+{text:"חשוב לה שאף אחד אף פעם לא יבייש אותה.", category:"פנים"},
+{text:"חשוב לה לחפש כל הזמן דברים שונים לעשות.", category:"גירוי"},
+{text:"חשוב לה לדאוג לאנשים הקרובים אליה.", category:"נדיבות אכפתיות"},
+{text:"חשוב לה שיהיה לה הכוח שכסף יכול להביא איתו.", category:"כוח משאבים"},
+{text:"חשוב לה מאוד להימנע ממחלות ולשמור על בריאותה.", category:"ביטחון אישי"},
+{text:"חשוב לה להיות סובלנית כלפי כל סוגי האנשים והקבוצות.", category:"אוניברסליזם סובלנות"},
+{text:"חשוב לה לעולם לא להפר חוקים או תקנות.", category:"קונפורמיות לכללים"},
+{text:"חשוב לה לקבל בעצמה את ההחלטות שלה לגבי חייה.", category:"עצמאות פעולה"},
+{text:"חשוב לה שיהיו לה שאיפות בחיים.", category:"הישגיות"},
+{text:"חשוב לה לשמר ערכים ודרכי חשיבה מסורתיים.", category:"מסורת"},
+{text:"חשוב לה שאנשים שהיא מכירה יתנו בה אמון מלא.", category:"נדיבות אמינות"},
+{text:"חשוב לה להיות עשירה.", category:"כוח משאבים"},
+{text:"חשוב לה להשתתף בפעולות להגנה על הטבע.", category:"אוניברסליזם טבע"},
+{text:"חשוב לה לא לעצבן אף אחד אף פעם.", category:"קונפורמיות בין-אישית"},
+{text:"חשוב לה לפתח דעות משלה.", category:"עצמאות חשיבה"},
+{text:"חשוב לה להגן על התדמית שלה בעיני אחרים.", category:"פנים"},
+{text:"מאוד חשוב לה לעזור לאנשים היקרים לה.", category:"נדיבות אכפתיות"},
+{text:"חשוב לה להיות בטוחה ומוגנת באופן אישי.", category:"ביטחון אישי"},
+{text:"חשוב לה להיות חברה אמינה שניתן לבטוח בה.", category:"נדיבות אמינות"},
+{text:"חשוב לה לקחת סיכונים שהופכים את החיים למרגשים.", category:"גירוי"},
+{text:"חשוב לה שיהיה לה הכוח לגרום לאנשים לעשות מה שהיא רוצה.", category:"כוח דומיננטיות"},
+{text:"חשוב לה לתכנן את הפעילויות שלה באופן עצמאי.", category:"עצמאות פעולה"},
+{text:"חשוב לה לנהוג לפי החוקים גם כשאף אחד לא מסתכל.", category:"קונפורמיות לכללים"},
+{text:"חשוב לה להצליח מאוד בחיים.", category:"הישגיות"},
+{text:"חשוב לה לדבוק במנהגים משפחתיים או במנהגים דתיים.", category:"מסורת"},
+{text:"חשוב לה להקשיב לאנשים השונים ממנה ולהבין אותם.", category:"אוניברסליזם סובלנות"},
+{text:"חשוב לה שמדינתה תהיה חזקה ומסוגלת להגן על אזרחיה.", category:"ביטחון חברתי"},
+{text:"חשוב לה ליהנות מתענוגות החיים.", category:"הדוניזם"},
+{text:"חשוב לה שלכל אדם בעולם יהיו הזדמנויות שוות בחיים.", category:"אוניברסליזם דאגה"},
+{text:"חשוב לה להיות ענווה.", category:"ענווה"},
+{text:"חשוב לה לפענח ולהבין דברים בעצמה.", category:"עצמאות חשיבה"},
+{text:"חשוב לה לכבד את המנהגים המסורתיים של התרבות שלה.", category:"מסורת"},
+{text:"חשוב לה להיות זו שאומרת לאחרים מה לעשות.", category:"כוח דומיננטיות"},
+{text:"חשוב לה לציית לכל החוקים.", category:"קונפורמיות לכללים"},
+{text:"חשוב לה שיהיו לה כל מיני חוויות חדשות.", category:"גירוי"},
+{text:"חשוב לה שיהיו לה דברים יקרים המעידים על עושרה.", category:"כוח משאבים"},
+{text:"חשוב לה להגן על הטבע מהרס ומזיהום.", category:"אוניברסליזם טבע"},
+{text:"חשוב לה לנצל כל הזדמנות ליהנות.", category:"הדוניזם"},
+{text:"חשוב לה לדאוג לכל צורך של יקיריה.", category:"נדיבות אכפתיות"},
+{text:"חשוב לה שאנשים יכירו בהישגים שלה.", category:"הישגיות"},
+{text:"חשוב לה לעולם לא להיות מושפלת.", category:"פנים"},
+{text:"חשוב לה שמדינתה תגן על עצמה מפני כל איום.", category:"ביטחון חברתי"},
+{text:"חשוב לה אף פעם לא להכעיס אנשים אחרים.", category:"קונפורמיות בין-אישית"},
+{text:"חשוב לה שכולם יקבלו יחס צודק, גם אנשים שאינה מכירה.", category:"אוניברסליזם דאגה"},
+{text:"חשוב לה להימנע מכל דבר מסוכן.", category:"ביטחון אישי"},
+{text:"חשוב לה להסתפק במה שיש לה ולא לבקש יותר.", category:"ענווה"},
+{text:"חשוב לה שכל חברותיה ובני משפחתה יוכלו לסמוך עליה לחלוטין.", category:"נדיבות אמינות"},
+{text:"חשוב לה להיות חופשייה להחליט בעצמה מה היא עושה.", category:"עצמאות פעולה"},
+{text:"חשוב לה לקבל אנשים אחרים גם כשאינה מסכימה איתם.", category:"אוניברסליזם סובלנות"}
+];
+
+let questions = questionsMale; // default; replaced once the person picks a gender form below
+
+
 const optionScale = [
 {label:"מאוד דומה לי",score:6},
 {label:"דומה לי",score:5},
@@ -726,6 +850,17 @@ const radarOrder = [
 ];
 
 const rankColors = ["#b8863f","#3f8f78","#7c6a9c"];
+
+// "פנים" is the literal academic term for the Schwartz value "Face" (protecting
+// one's public image), but on its own it reads as ambiguous in Hebrew.
+// This clarifies it wherever the category name is shown to the person,
+// without touching the underlying category key used for scoring/matching.
+const categoryDisplayNames = {
+    "פנים": "פנים (כבוד ותדמית)"
+};
+function displayName(category){
+    return categoryDisplayNames[category] || category;
+}
 
 let currentQuestion = 0;
 
@@ -817,7 +952,7 @@ function showResults(){
                 <div class="top3-rank">${i+1}</div>
                 <div class="top3-icon">${info.icon}</div>
             </div>
-            <div class="top3-name">${r.category}</div>
+            <div class="top3-name">${displayName(r.category)}</div>
             <div class="top3-desc">${info.desc}</div>
             <div class="top3-pct-row">
                 <span>${r.percentage}%</span>
@@ -848,7 +983,7 @@ function showResults(){
 
         item.innerHTML=`
             <div class="result-label">
-                <span>${r.category}</span>
+                <span>${displayName(r.category)}</span>
                 <span>${r.percentage}%</span>
             </div>
             <div class="bar-outer">
@@ -945,11 +1080,11 @@ function buildRadarChart(data){
 function buildAiPrompt(results){
 
     const top3 = results.slice(0,3)
-        .map((r,i)=>`${i+1}. ${r.category} (${r.percentage}%)`)
+        .map((r,i)=>`${i+1}. ${displayName(r.category)} (${r.percentage}%)`)
         .join("\n");
 
     const fullList = results
-        .map(r=>`- ${r.category}: ${r.percentage}%`)
+        .map(r=>`- ${displayName(r.category)}: ${r.percentage}%`)
         .join("\n");
 
     const prompt =
@@ -996,7 +1131,14 @@ function copyAiPrompt(){
     }
 }
 
-showQuestion();
+function startQuiz(gender){
+    questions = (gender === 'female') ? questionsFemale : questionsMale;
+
+    document.getElementById("gender-screen").style.display = "none";
+    document.getElementById("quiz-screen").style.display = "block";
+
+    showQuestion();
+}
 
 </script>
 
